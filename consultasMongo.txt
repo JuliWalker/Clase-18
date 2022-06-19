@@ -1,0 +1,66 @@
+//1. inicializamos DB y collecciones
+use ecommerce
+db.CreateCollection("mensajes")
+db.CreateCollection("productos")
+
+//2. Cargamos los 10 mensajes y productos
+db.mensajes.insertMany([
+    {"user":"Juli","msg":"Hola, como estan?"},
+    {"user":"Lau","msg":"muy bien! Como vienen con esos tps?"},
+    {"user":"Alfred","msg":"con este mucho mejor"},
+    {"user":"Juli","msg":"Si Mongo es mucho mas facil de usar que MySQL!"},
+    {"user":"Lau","msg":"Que bueno!! Sigan asi"},
+    {"user":"Alfred","msg":"Si! gracias Lau"},
+    {"user":"Juli","msg":"Si, ya casi tenemos lista la entrega"},
+    {"user":"Lau","msg":"Me alegro, ojala salga rapido y disfruten el resto del finde largo"},
+    {"user":"Alfred","msg":"Si, yo ya quiero ir a almorzar con la familia por el dia del padre"},
+    {"user":"Juli","msg":"Bueno, me voy yendo a terminar el tp! Nos vemos"}])
+
+db.productos.insertMany([
+    {"nombre":"auriculares sony","descripcion":"auriculares marca sony que suenana lindo","codigo":"7ASC6921","URLfoto":"url.auriculares","precio":1300,"stock":47},
+    {"nombre":"auriculares noga","descripcion":"auriculares noga in ear, baratos y medio pelo","codigo":"7A34FAD1","URLfoto":"url.auriculares.noga","precio":1500,"stock":30},
+    {"nombre":"parlante philips","descripcion":"parlantito para ambientes chicos, buena calidad de sonido","codigo":"7A33595A","URLfoto":"url.parlantito","precio":2300,"stock":35},
+    {"nombre":"parlante Marshall","descripcion":"parlante y amplificador Marshall para tocar la guitarra todo el dia","codigo":"7A33595A","URLfoto":"url.parlantito2","precio":2700,"stock":15},
+    {"nombre":"bocina Bose","descripcion":"Bocina para incrementar los bajos","codigo":"7A335923V","URLfoto":"url.parlantito3","precio":1300,"stock":20},
+    {"nombre":"cable de audio","descripcion":"cablecito para conectar el sonido","codigo":"7A3359HR","URLfoto":"url.cablecito","precio":180,"stock":95},
+    {"nombre":"microfono boss pro","descripcion":"Microfono de calidad para cantar como gardel","codigo":"7A335RRR","URLfoto":"url.mic","precio":2600,"stock":8},
+    {"nombre":"microfono de karaoke","descripcion":"Microfono para cantar tus canciones favoritas de Luismi","codigo":"7A33523M","URLfoto":"url.mic.karaoke","precio":1400,"stock":30},
+    {"nombre":"subBuffer","descripcion":"parlante con bajos potentes y sin distorcion","codigo":"7A3358IF","URLfoto":"url.subBuffer","precio":1900,"stock":19},
+    {"nombre":"twitter","descripcion":"parlante con resalte de agudos","codigo":"7A335TTR","URLfoto":"url.twitter","precio":1900,"stock":15}])
+
+//3. consultamos las collecciones
+db.mensajes.find().pretty()
+db.productos.find().pretty()
+
+//4.Reviso cuantos documentos tienen las collecciones
+db.mensajes.find().count()
+db.productos.find().count()
+
+//5. Realizar CRUD
+//Agregamos un documento más a la colleccion de productos
+db.productos.insertOne({"nombre":"consolaDJ","descripcion":"consola para remixar los temas que te gustan","codigo":"7A335TPP","URLfoto":"url.consola","precio":4900,"stock":12})
+
+// buscar un producto por nombre:
+db.productos.findOne({"nombre": "parlante philips"})
+
+// Listar productos por intervalo de precio
+db.productos.find({"precio": {$lt: 1000} } ).pretty()
+db.productos.find( { $and: [ {"precio": {$gte: 1000 } } , {"precio":  { $lte: 3000}  } ] } ).pretty()
+db.productos.find({"precio": {$gt: 3000  } } ).pretty()
+
+// Buscar el 3er producto más barato
+db.productos.find().sort({precio: 1}).skip(2).limit(1).pretty()
+
+// Agregar campo stock a todos los productos con valor 100.
+// El stock ya lo cargue inicialmente, entonces en vez de agregrlo voy a hacerle un update con valor 100
+db.productos.updateMany({ },{ $set: { "stock" : 100 } })
+
+// Bajar a 0 el stock de los productos con precio mayor a 4000
+db.productos.updateMany({ precio: { $gt: 4000 } },{ $set: { "stock" : 0 } })
+
+// borrar productos de menos de 1000 pesos
+db.productos.deleteMany({ precio: { $lt: 1000 } })
+
+//6. Crear un usario Pepe que solo pueda leer documentos de la base ecommerce
+use admin
+db.createUser( { user: "pepe", pwd: "pepeLector", roles: [ { role: "read", db:"ecommerce"} ]  } )
